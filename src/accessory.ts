@@ -167,36 +167,26 @@ class DelonghiPac implements AccessoryPlugin {
   }
 
   get() {    
-    let data: any = []
-    
-    const options = {
-      hostname: '192.168.1.103',
-      port: 80,
-      path: '/status',
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }
-
-    const req = http.request(options, (res: any) => {
-      console.log(`statusCode: ${res.statusCode}`)
-      res.on('data', (chunk: any) => {
-        data.push(chunk)
-      })
-    })
-
-    req.on('end', () => {
-      var object = JSON.parse(data);
-      this.log(object.temperature);
-      this.log(object.humidity);
-    })
-
-    req.on('error', (error: any) => {
-      console.error(error)
-    })
-    
-    req.end();
+    http.get("http://192.168.1.103/status", (res: any) => {
+      let body = "";
+  
+      res.on("data", (chunk: any) => {
+          body += chunk;
+      });
+  
+      res.on("end", () => {
+          try {
+              let json = JSON.parse(body);
+              this.log(json.temperature);
+              this.log(json.humidity);
+          } catch (error) {
+              console.error(error.message);
+          };
+      });
+  
+    }).on("error", (error: any) => {
+        console.error(error.message);
+    });
   }
 
   identify(): void {
