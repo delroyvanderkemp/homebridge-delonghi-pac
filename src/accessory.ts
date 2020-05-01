@@ -179,9 +179,12 @@ class DelonghiPac implements AccessoryPlugin {
 
     const req = http.request(options, (res: any) => {
       console.log(`statusCode: ${res.statusCode}`)
-    
+      res.setEncoding('utf8');
+
       res.on('data', (data: any) => {
         this.log(JSON.stringify(data));
+        this.log(JSON.stringify(data.temperature));
+        this.log(JSON.stringify(data.humidity));
       })
     })
 
