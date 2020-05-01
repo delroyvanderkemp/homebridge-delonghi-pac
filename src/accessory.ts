@@ -50,7 +50,7 @@ class DelonghiPac implements AccessoryPlugin {
   }
 
   addServices(config: AccessoryConfig) {
-
+    this.dictionary = {};
     this.dictionary["on"] = false;
     this.dictionary["temperature"] = "16";
 
@@ -111,6 +111,7 @@ class DelonghiPac implements AccessoryPlugin {
     }
     
     this.post();
+    callback();
   }
 
   getProperties(key: string, callback: any) {
