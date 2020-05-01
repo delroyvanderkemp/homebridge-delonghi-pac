@@ -181,7 +181,7 @@ class DelonghiPac implements AccessoryPlugin {
       console.log(`statusCode: ${res.statusCode}`)
     
       res.on('data', (data: any) => {
-        this.log(data);
+        this.log(JSON.stringify(data));
       })
     })
 
