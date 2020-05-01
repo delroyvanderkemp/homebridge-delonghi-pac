@@ -20,6 +20,8 @@ class DelonghiPac implements AccessoryPlugin {
     rotationSpeed: 3
   }
 
+  private dictionary: { [characterName: string]: any};
+
   private state = {
     on: false, 
     temperature: "16",
@@ -48,6 +50,10 @@ class DelonghiPac implements AccessoryPlugin {
   }
 
   addServices(config: AccessoryConfig) {
+
+    this.dictionary["on"] = false;
+    this.dictionary["temperature"] = "16";
+
     this.coolerService = new Service.HeaterCooler(config.name);
     this.dehumidifierService = new Service.HumidifierDehumidifier(config.name);
     this.fanService = new Service.Fanv2(config.name);
@@ -60,8 +66,8 @@ class DelonghiPac implements AccessoryPlugin {
 
   bindCoolerCharacteristics() {
     this.coolerTargetState = this.coolerService.getCharacteristic(Characteristic.Active)
-      .on(CharacteristicEventTypes.SET, this.setCoolerActive.bind(this))
-      .on(CharacteristicEventTypes.GET, this.getCoolerActive.bind(this));
+      .on(CharacteristicEventTypes.SET, (value: any, callback: any) => this.setProperties("on", value, callback))
+      .on(CharacteristicEventTypes.GET, (callback: any) => this.getProperties("on", callback));
 
     this.coolerTargetState = this.coolerService.getCharacteristic(Characteristic.TargetHeaterCoolerState)
       .setProps({
@@ -76,8 +82,8 @@ class DelonghiPac implements AccessoryPlugin {
         minValue: 16,
         minStep: 1
       })
-      .on(CharacteristicEventTypes.SET, this.setCoolerTargetTemperature.bind(this))
-      .on(CharacteristicEventTypes.GET, this.getCoolerTargetTemperature.bind(this))
+      .on(CharacteristicEventTypes.SET, (value: any, callback: any) => this.setProperties("temperature", value, callback))
+      .on(CharacteristicEventTypes.GET, (callback: any) => this.getProperties("temperature", callback));
 
     this.coolerService.getCharacteristic(Characteristic.CurrentTemperature)
     .on(CharacteristicEventTypes.GET, this.getCoolerCurrentTemperature.bind(this));
@@ -86,6 +92,29 @@ class DelonghiPac implements AccessoryPlugin {
     .setProps({
       validValues: [Characteristic.CurrentHeaterCoolerState.INACTIVE, Characteristic.CurrentHeaterCoolerState.COOLING]
     });
+  }
+
+  setProperties(key: string, value: any, callback: any) {
+    this.dictionary[key] = value;
+
+    this.coolerService.getCharacteristic(Characteristic.Active).updateValue(this.dictionary["on"]);
+    this.coolerService.getCharacteristic(Characteristic.CoolingThresholdTemperature).updateValue(this.dictionary["temperature"]);
+
+    this.state = {
+      on: this.dictionary["on"], 
+      temperature: this.dictionary["temperature"],
+      mode: 8, 
+      fan: 2,
+      timer: false,
+      timer_value: "0", 
+      unitF: false
+    }
+    
+    this.post();
+  }
+
+  getProperties(key: string, callback: any) {
+    callback(null, this.dictionary[key])
   }
 
   setCoolerActive(active: any, callback: any) {
