@@ -109,7 +109,7 @@ class DelonghiPac implements AccessoryPlugin {
 
   getCoolerCurrentTemperature(callback: any) {
     this.get();
-    
+
     callback(null, 24);
   }
 
@@ -189,7 +189,6 @@ class DelonghiPac implements AccessoryPlugin {
       console.error(error)
     })
     
-    req.get();
     req.end();
   }
 
