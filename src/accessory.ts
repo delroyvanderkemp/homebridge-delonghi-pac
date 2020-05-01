@@ -167,6 +167,8 @@ class DelonghiPac implements AccessoryPlugin {
   }
 
   get() {    
+    let data: any = []
+    
     const options = {
       hostname: '192.168.1.103',
       port: 80,
@@ -179,13 +181,15 @@ class DelonghiPac implements AccessoryPlugin {
 
     const req = http.request(options, (res: any) => {
       console.log(`statusCode: ${res.statusCode}`)
-      res.setEncoding('utf8');
-
-      res.on('data', (data: any) => {
-        this.log(JSON.stringify(data));
-        this.log(JSON.stringify(data.temperature));
-        this.log(JSON.stringify(data.humidity));
+      res.on('data', (chunk: any) => {
+        data.push(chunk)
       })
+    })
+
+    req.on('end', () => {
+      var object = JSON.parse(data);
+      this.log(object.temperature);
+      this.log(object.humidity);
     })
 
     req.on('error', (error: any) => {
