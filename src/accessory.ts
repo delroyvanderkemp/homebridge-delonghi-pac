@@ -35,6 +35,8 @@ class DelonghiPac implements AccessoryPlugin {
     targetTemperature: 20,
   }
 
+  private currentTemperature = 0.0;
+
   private coolerTargetState: any;
   private coolerCurrentState: any;
 
@@ -110,7 +112,7 @@ class DelonghiPac implements AccessoryPlugin {
   getCoolerCurrentTemperature(callback: any) {
     this.get();
 
-    callback(null, 24);
+    callback(null, this.currentTemperature);
   }
 
   setCoolerTargetTemperature(targetTemperature: any, callback: any) {
@@ -177,7 +179,10 @@ class DelonghiPac implements AccessoryPlugin {
       res.on("end", () => {
           try {
               let json = JSON.parse(body);
-              this.log(json.temperature);
+
+              this.currentTemperature = json.temperature;
+              this.coolerService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(this.currentTemperature);
+
               this.log(json.humidity);
           } catch (error) {
               console.error(error.message);
