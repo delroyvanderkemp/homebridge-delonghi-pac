@@ -77,7 +77,8 @@ class DelonghiPac implements AccessoryPlugin {
       .on(CharacteristicEventTypes.SET, this.setCoolerTargetTemperature.bind(this))
       .on(CharacteristicEventTypes.GET, this.getCoolerTargetTemperature.bind(this))
 
-    this.coolerService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(24);
+    this.coolerService.getCharacteristic(Characteristic.CurrentTemperature)
+    .on(CharacteristicEventTypes.GET, this.getCoolerCurrentTemperature.bind(this));
 
     this.coolerCurrentState = this.coolerService.getCharacteristic(Characteristic.CurrentHeaterCoolerState)
     .setProps({
@@ -104,6 +105,12 @@ class DelonghiPac implements AccessoryPlugin {
   getCoolerTargetState(callback: any) {
     this.log("Getting cooler state of "+this.coolerState.targetState);
     callback(null, this.coolerState.targetState);
+  }
+
+  getCoolerCurrentTemperature(callback: any) {
+    this.get();
+    
+    callback(null, 24);
   }
 
   setCoolerTargetTemperature(targetTemperature: any, callback: any) {
@@ -157,6 +164,33 @@ class DelonghiPac implements AccessoryPlugin {
     
     req.write(data)
     req.end()
+  }
+
+  get() {    
+    const options = {
+      hostname: '192.168.1.103',
+      port: 80,
+      path: '/status',
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+
+    const req = http.request(options, (res: any) => {
+      console.log(`statusCode: ${res.statusCode}`)
+    
+      res.on('data', (data: any) => {
+        this.log(data);
+      })
+    })
+
+    req.on('error', (error: any) => {
+      console.error(error)
+    })
+    
+    req.get();
+    req.end();
   }
 
   identify(): void {
